@@ -64,6 +64,14 @@ body,.hero,#cover{font-weight:700}
 .welcome{color:#000;font-weight:700;-webkit-text-stroke:.6px #000;paint-order:stroke fill}
 @media (min-aspect-ratio:1/1){#cover,.hero{background-size:auto 100%}}
 @media (prefers-reduced-motion:reduce){#petals{display:none}html{scroll-behavior:auto}#cover{transition:none}}
+
+/* scroll-down arrow (appears after the invitation is opened) */
+#down{position:fixed;z-index:12;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:48px;height:48px;margin-left:-24px;border-radius:50%;border:1.5px solid var(--acc);background:var(--btn);color:var(--btn-ink);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.28);opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity .5s,transform .5s,visibility .5s}
+#down.show{opacity:1;visibility:visible;transform:none}
+#down svg{width:24px;height:24px;animation:nudge 1.6s ease-in-out infinite}
+#down:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+@keyframes nudge{0%,100%{transform:translateY(-3px)}50%{transform:translateY(4px)}}
+@media (prefers-reduced-motion:reduce){#down svg{animation:none}#down{transition:none}}
 </style>
 </head>
 <body data-theme="garden">
@@ -76,6 +84,7 @@ body,.hero,#cover{font-weight:700}
  
 </div>
 <button id="mus" aria-label="Music on or off" aria-pressed="false">♪</button>
+<button id="down" type="button" aria-label="Scroll down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></button>
 <main>
   <section class="hero">
     <h1 class="names" id="hn"></h1>
@@ -87,9 +96,7 @@ body,.hero,#cover{font-weight:700}
    
    
   </div>
-</main>
-
-  <section><h2>Counting down</h2><div class="cd" id="cd"></div></section>
+<section><h2>Counting down</h2><div class="cd" id="cd"></div></section>
   <section><h2>The celebration</h2><div id="ev"></div></section>
   <section><h2>Find us here</h2>
     <div class="card"><h3 id="vn"></h3><div id="va"></div>
@@ -98,7 +105,7 @@ body,.hero,#cover{font-weight:700}
       <a class="btn ghost" id="dir" target="_blank" rel="noopener">Get directions</a>
     </div>
   </section>
-  <p class="large" style="margin: top 150px"><strong></strong><bold>We can't wait to celebrate with you.</bold></strong></p>
+  <p class="large"><strong>We can't wait to celebrate with you.</strong></p>
 </main>
 <script>
 /* ===== EDIT THESE DETAILS ===== */
@@ -148,7 +155,19 @@ function shower(){
 
   
 }
-$("open").onclick=()=>{$("cover").classList.add("gone");music(true);shower()};
+/* Scroll-down arrow */
+let opened=false;const down=$("down");
+function arrow(){
+  const atEnd=window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-60;
+  down.classList.toggle("show",opened&&!atEnd);
+}
+down.onclick=()=>{
+  const next=[...document.querySelectorAll("main section")].find(el=>el.getBoundingClientRect().top>80);
+  if(next)next.scrollIntoView({behavior:"smooth",block:"start"});
+  else window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"});
+};
+addEventListener("scroll",arrow,{passive:true});addEventListener("resize",arrow);
+$("open").onclick=()=>{$("cover").classList.add("gone");music(true);shower();setTimeout(()=>{opened=true;arrow()},700)};
 </script>
 </body>
 </html>
